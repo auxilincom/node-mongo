@@ -9,7 +9,7 @@
     "test": "run-s test:*",
     "test:eslint": "eslint ./",
     "test:mocha": "NODE_ENV=test mocha --exit --recursive -c -R spec src/*.spec.js",
-    "coveralls": "nyc npm run test:mocha && nyc report --reporter=text-lcov | coveralls",    
+    "coveralls": "nyc npm run test:mocha && nyc report --reporter=text-lcov | coveralls",
     "add-contributor": "all-contributors add",
     "generate-contributors": "all-contributors generate"
   },
