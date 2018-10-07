@@ -6,7 +6,6 @@ const env = process.env.NODE_ENV || 'development';
 
 let base = {
   env,
-  port: process.env.PORT || 8080,
   isDev: env === 'development',
   isTest: env === 'test',
 };
