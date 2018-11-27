@@ -1,6 +1,6 @@
 pipeline:
   run-mongo-tests:
-    image: node:10.11.0
+    image: node:10.13.0
     commands:
       - chmod +x ./bin/run.sh
       - ./bin/run.sh
@@ -9,7 +9,7 @@ pipeline:
       event: [pull_request]
 
   run-coveralls:
-    image: node:10.11.0
+    image: node:10.13.0
     secrets: [ coveralls_repo_token ]
     commands:
       - sleep 5
