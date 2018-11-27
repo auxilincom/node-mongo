@@ -1,9 +1,11 @@
 
 # Node Mongo
 
+[![Auxilin.com — Production ready Node, React starter kit for building products at a warp speed](https://raw.githubusercontent.com/auxilincom/component-template/master/assets/cover-black.png)](https://github.com/auxilincom/auxilin)
+
 [![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors)
 [![npm version](https://badge.fury.io/js/%40auxilin%2Fnode-mongo.svg)](https://badge.fury.io/js/%40auxilin%2Fnode-mongo) 
-[![license](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square)](LICENSE)
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square)](https://github.com/auxilincom/node-mongo/blob/master/LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 [![Build Status](http://ci.auxilin.com/api/badges/auxilincom/node-mongo/status.svg)](http://ci.auxilin.com/auxilincom/node-mongo)
 [![David Dependancy Status](https://david-dm.org/auxilincom/node-mongo.svg)](https://david-dm.org/auxilincom/node-mongo)
@@ -14,6 +16,7 @@
 [![Star on GitHub](https://img.shields.io/github/stars/auxilincom/node-mongo.svg?style=social&label=Stars)](https://github.com/auxilincom/node-mongo/stargazers)
 [![Follow](https://img.shields.io/twitter/follow/auxilin.svg?style=social&label=Follow)](https://twitter.com/auxilin)
 [![Tweet](https://img.shields.io/twitter/url/https/github.com/auxilincom/node-mongo.svg?style=social)](https://twitter.com/intent/tweet?text=I%27m%20using%20Auxilin%20components%20to%20build%20my%20next%20product%20🚀.%20Check%20it%20out:%20https://github.com/auxilincom/node-mongo)
+[![@auxilin](https://img.shields.io/badge/%F0%9F%92%AC%20Telegram-t.me/auxilin-blue.svg)](https://t.me/auxilin)
 
 Node Mongo — is reactive extension to MongoDB API. It provides few usability improvements to the [monk](https://github.com/Automattic/monk) API. 
 
