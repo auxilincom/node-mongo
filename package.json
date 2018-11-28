@@ -1,6 +1,6 @@
 {
   "name": "@auxilin/node-mongo",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": "Auxilin",
   "description": "MongoDB wrapper for Node.JS",
   "private": false,
