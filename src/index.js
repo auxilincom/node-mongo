@@ -89,3 +89,5 @@ const connect = (connectionString) => {
 
 module.exports.connect = connect;
 module.exports.idGenerator = idGenerator;
+module.exports.MongoService = MongoService;
+module.exports.MongoQueryService = MongoQueryService;
