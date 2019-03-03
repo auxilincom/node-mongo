@@ -1,5 +1,8 @@
-const monk = require('monk');
+const mongoose = require('mongoose');
+
+const { ObjectId } = mongoose.Types;
 
 exports.generate = () => {
-  return monk.id().toHexString();
+  const id = new ObjectId();
+  return id.toHexString();
 };

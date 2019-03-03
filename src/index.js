@@ -1,4 +1,6 @@
-const monk = require('monk');
+const mongoose = require('mongoose');
+
+const { Schema } = mongoose;
 
 const MongoService = require('./MongoService');
 const MongoQueryService = require('./MongoQueryService');
@@ -14,45 +16,42 @@ const logger = global.logger || console;
 * mongodb service
 */
 const connect = (connectionString) => {
-  // options docs: http://mongodb.github.io/node-mongodb-native/2.1/reference/connecting/connection-settings/
-  const db = monk(connectionString, {
+  // options docs: https://mongoosejs.com/docs/api.html#mongoose_Mongoose-connect
+  const db = mongoose.createConnection(connectionString, {
     connectTimeoutMS: 20000,
+    useNewUrlParser: true,
   });
 
-  db.on('error-opening', (err) => {
+  db.on('connected', () => {
+    logger.info(`Connected to the mongodb: ${connectionString}`);
+  });
+
+  db.on('error', (err) => {
     logger.error(err, 'Failed to connect to the mongodb on start');
     throw err;
   });
 
-  db.on('open', () => {
-    logger.info(`Connected to mongodb: ${connectionString}`);
+  // When the mongodb server goes down, mongoose emits a 'disconnected' event
+  db.on('disconnected', () => {
+    logger.warn(`Lost connection with mongodb: ${connectionString}`);
   });
 
-  db.on('close', (err) => {
-    if (err) {
-      logger.error(err, `Lost connection with mongodb: ${connectionString}`);
-    } else {
-      logger.warn(`Closed connection with mongodb: ${connectionString}`);
-    }
+  // The driver tries to automatically reconnect by default, so when the
+  // server starts the driver will reconnect and emit a 'reconnect' event.
+  db.on('reconnected', () => {
+    logger.warn(`Reconnected with mongodb: ${connectionString}`);
   });
 
-  db.on('connected', (err) => {
-    if (err) {
-      logger.error(err);
-    } else {
-      logger.info(`Connected to mongodb: ${connectionString}`);
-    }
+  db.on('reconnectFailed', () => {
+    logger.warn(`Reconnected with mongodb failed: ${connectionString}`);
   });
 
   // Add factory methods to the database object
-  db.createService = (collectionName, validateSchema, options = {}) => {
-    const opt = options;
-    if (validateSchema) {
-      opt.validateSchema = validateSchema;
-    }
+  db.createService = (collectionName, schema, options = {}) => {
+    const collectionSchema = schema instanceof Schema ? schema : new Schema(schema);
+    const model = db.model(collectionName, collectionSchema);
 
-    const collection = db.get(collectionName, { castIds: false });
-    return new MongoService(collection, opt);
+    return new MongoService(model, collectionSchema, options);
   };
 
   /**
@@ -66,10 +65,11 @@ const connect = (connectionString) => {
     };
   };
 
-  db.createQueryService = (collectionName, options = {}) => {
-    const collection = db.get(collectionName, { castIds: false });
+  db.createQueryService = (collectionName, schema, options) => {
+    const collectionSchema = schema instanceof Schema ? schema : new Schema(schema);
+    const model = db.model(collectionName, collectionSchema);
 
-    return new MongoQueryService(collection, options);
+    return new MongoQueryService(model, collectionSchema, options);
   };
 
   /**

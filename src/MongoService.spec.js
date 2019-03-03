@@ -1,9 +1,6 @@
 const chai = require('chai');
-const Joi = require('joi');
-const { Validator } = require('jsonschema');
 
 global.logger = console;
-const validator = new Validator();
 
 const MongoService = require('./MongoService');
 const config = require('./config');
@@ -17,51 +14,46 @@ db.setServiceMethod('createByName', async (service, name) => {
   return res;
 });
 
-const joiSchema = {
-  _id: Joi.string(),
-  firstName: Joi.string().allow(''),
-  lastName: Joi.string(),
-};
-
-const jsonSchema = {
-  id: '/User',
-  type: 'object',
-  properties: {
-    _id: { type: 'String' },
-    firstName: { type: 'String' },
-    lastName: { type: 'String', minLength: 1 },
+const userSchema = {
+  _id: String,
+  name: {
+    type: String,
+    required: true,
   },
-  required: ['lastName'],
 };
 
-const validateJoiSchema = obj => Joi.validate(obj, joiSchema, { allowUnknown: true });
+const userSchema2 = {
+  _id: String,
+  firstName: {
+    type: String,
+  },
+  lastName: {
+    type: String,
+    minlength: 1,
+  },
+};
 
-const validateJsonSchema = obj => validator.validate(obj, jsonSchema);
+const userSchemaWithDate = {
+  _id: String,
+  name: {
+    type: String,
+  },
+  createdOn: Date,
+  updatedOn: Date,
+};
 
-let userServiceJoiSchema;
-let userServiceJsonSchema;
 let userService;
-let findUserService;
+let userService2;
 let userServiceWithDate;
 
 describe('MongoService', () => {
   before(async () => {
-    userServiceJoiSchema = db.createService(
-      `users-joi-schema-${Date.now()}`,
-      validateJoiSchema,
-    );
-
-    userServiceJsonSchema = db.createService(
-      `users-json-schema-${Date.now()}`,
-      validateJsonSchema,
-    );
-
-    userService = db.createService(`users-${Date.now()}`);
-    findUserService = db.createService(`users-${Date.now() + 1}`);
+    userService = db.createService(`users-${Date.now()}`, userSchema);
+    userService2 = db.createService(`users2-${Date.now()}`, userSchema2);
 
     userServiceWithDate = db.createService(
       `users-${Date.now() + 2}`,
-      null,
+      userSchemaWithDate,
       {
         addCreatedOnField: true,
         addUpdatedOnField: true,
@@ -71,10 +63,8 @@ describe('MongoService', () => {
 
   after(async () => {
     await Promise.all([
-      userServiceJoiSchema._collection.drop(),
-      userService._collection.drop(),
-      findUserService._collection.drop(),
-      userServiceWithDate._collection.drop(),
+      userService._model.collection.drop(),
+      userServiceWithDate._model.collection.drop(),
     ]);
   });
 
@@ -226,42 +216,18 @@ describe('MongoService', () => {
     userDoc.name.should.be.equal('Alice');
   });
 
-  it('should return an error that the data does not satisfy the jsonschema schema', async () => {
+  it('should return an error that the data does not satisfy the specified schema', async () => {
     let errors;
     try {
-      await userServiceJsonSchema.create({
+      await userService2.create({
         firstName: 'Evgeny',
         lastName: '',
       });
     } catch (err) {
-      errors = err.error.details;
+      errors = err.error.errors;
     }
 
-    errors.length.should.be.equal(1);
-    errors[0].name.should.be.equal('minLength');
-  });
-
-  it('should return an error that the data does not satisfy the joi schema', async () => {
-    let errors;
-    try {
-      await userServiceJoiSchema.create({
-        firstName: 'Evgeny',
-        lastName: '',
-      });
-    } catch (err) {
-      errors = err.error.details;
-    }
-
-    errors.length.should.be.equal(1);
-    errors[0].type.should.be.equal('any.empty');
-  });
-
-  it('should successfully create new user', async () => {
-    const user = await userServiceJoiSchema.create({
-      firstName: 'Evgeny',
-      lastName: 'Zhivitsa',
-    });
-    user.firstName.should.be.equal('Evgeny');
+    errors.lastName.kind.should.be.equal('minlength');
   });
 
   it('should return an error that update function must be specified', async () => {
@@ -288,7 +254,6 @@ describe('MongoService', () => {
   it('should handle changes of the specified properties', (done) => {
     const name = 'Wanda Marya Maximoff';
     const pseudonym = 'Scarlet Witch';
-    userService.createByName(name);
 
     const propertiesObject = { name: pseudonym };
     userService.onPropertiesUpdated(propertiesObject, ({ doc, prevDoc }) => {
@@ -296,9 +261,12 @@ describe('MongoService', () => {
       done();
     });
 
-    userService.update({ name }, (doc) => {
-      Object.assign(doc, { name: pseudonym });
-    });
+    userService.createByName(name)
+      .then(() => {
+        userService.update({ name }, (doc) => {
+          Object.assign(doc, { name: pseudonym });
+        });
+      });
   });
 
   it('should add field createdOn to the document', async () => {

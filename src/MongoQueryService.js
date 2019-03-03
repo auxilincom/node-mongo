@@ -2,8 +2,9 @@ const idGenerator = require('./idGenerator');
 const MongoServiceError = require('./MongoServiceError');
 
 class MongoQueryService {
-  constructor(collection, options = {}) {
-    this._collection = collection;
+  constructor(model, schema, options = {}) {
+    this._model = model;
+    this._schema = schema;
     this._options = options;
     this._idGenerator = idGenerator;
   }
@@ -12,7 +13,7 @@ class MongoQueryService {
   * @return {string} name of the collection
   */
   get name() {
-    return this._collection.name;
+    return this._model.collection.name;
   }
 
   /**
@@ -37,14 +38,14 @@ class MongoQueryService {
     delete options.perPage;
     delete options.page;
 
-    const results = await this._collection.find(query, options);
+    const results = await this._model.find(query, null, options).exec();
     if (!hasPaging) {
       return {
         results,
       };
     }
 
-    const count = await this._collection.count(query);
+    const count = await this._model.countDocuments(query).exec();
     const pagesCount = Math.ceil(count / perPage) || 1;
 
     return {
@@ -63,15 +64,15 @@ class MongoQueryService {
   * @return {Object} - returns a document from the database
   */
   async findOne(query = {}, options = {}) {
-    const data = await this.find(query, options);
-    if (data.results.length > 1) {
+    const results = await this._model.find(query, null, options).exec();
+    if (results.length > 1) {
       throw new MongoServiceError(
         MongoServiceError.MORE_THAN_ONE,
         `findOne: More than one document return for query ${JSON.stringify(query)}`,
       );
     }
 
-    return data.results.length === 1 ? data.results[0] : null;
+    return results[0];
   }
 
   /**
@@ -81,7 +82,7 @@ class MongoQueryService {
   * @return {Number} - number of documents matched by query
   */
   count(query) {
-    return this._collection.count(query);
+    return this._model.countDocuments(query).exec();
   }
 
   /**
@@ -91,8 +92,8 @@ class MongoQueryService {
   * @param query {Object} - search query
   * @return {Array} - distinct values of given field
   */
-  distinct(field, query, options) {
-    return this._collection.distinct(field, query, options);
+  distinct(field, query) {
+    return this._model.distinct(field, query).exec();
   }
 
   /**
@@ -114,7 +115,7 @@ class MongoQueryService {
   * @return {Object} - aggregation result
   */
   aggregate(pipeline) {
-    return this._collection.aggregate(pipeline);
+    return this._model.aggregate(pipeline).exec();
   }
 
   /**

@@ -1,4 +1,5 @@
 const chai = require('chai');
+const mongoose = require('mongoose');
 
 const config = require('./config');
 
@@ -8,6 +9,22 @@ global.logger = console;
 
 const db = require('./').connect(config.mongo.connection);
 
+const AllySchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+});
+
+const UserSchema = new mongoose.Schema({
+  _id: String,
+  name: {
+    type: String,
+    required: true,
+  },
+  allies: [AllySchema],
+});
+
 db.setQueryServiceMethod('findById', (service, id) => {
   return service.findOne({ _id: id });
 });
@@ -16,14 +33,25 @@ describe('MongoQueryService', () => {
   const collectionName = `users-${Date.now()}`;
   const collectionName2 = `users2-${Date.now()}`;
 
-  const userService = db.createService(collectionName);
-  const userService2 = db.createService(collectionName2);
+  const userService = db.createService(collectionName, UserSchema);
+  const userService2 = db.createService(collectionName2, UserSchema);
 
-  const userQueryService = db.createQueryService(collectionName);
-  const userQueryService2 = db.createQueryService(collectionName2);
+  const userQueryService = db.createQueryService(collectionName, UserSchema);
+  const userQueryService2 = db.createQueryService(collectionName2, UserSchema);
 
   after(async () => {
-    await userService._collection.drop();
+    const promise = new Promise((resolve) => {
+      setTimeout(() => {
+        userService._model.collection.drop().then(() => {
+          resolve();
+        });
+      }, 200);
+    });
+
+    await Promise.all([
+      userService2._model.collection.drop(),
+      promise,
+    ]);
   });
 
   it('should successfully get name of the collection', () => {
@@ -74,12 +102,12 @@ describe('MongoQueryService', () => {
     res.should.be.equal(2);
   });
 
-  it('should return distinct valuest', async () => {
+  it('should return distinct values', async () => {
     await userService2.create([{ name: 'User1' }, { name: 'User2' }]);
 
     const res = await userQueryService2.distinct('name');
-    res[0].should.be.equal('User1');
-    res[1].should.be.equal('User2');
+    res.length.should.be.equal(2);
+    res.should.be.an('array').that.includes('User1', 'User2');
   });
 
   it("should return that user Professor X doesn't exist in the list of user", async () => {

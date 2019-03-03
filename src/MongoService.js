@@ -11,9 +11,27 @@ const defaultOptions = {
   addUpdatedOnField: false,
 };
 
+const validateSchema = (entity) => {
+  const error = entity.validateSync();
+  if (error) {
+    const { errors } = error;
+    const keys = Object.keys(errors);
+
+    if (errors && keys.length) {
+      logger.error('Schema invalid', JSON.stringify(errors, 0, 4));
+
+      throw new MongoServiceError(
+        MongoServiceError.INVALID_SCHEMA,
+        `Document schema is invalid: ${JSON.stringify(errors)}`,
+        error,
+      );
+    }
+  }
+};
+
 class MongoService extends MongoQueryService {
-  constructor(collection, options = {}, eventBus = new EventEmitter()) {
-    super(collection, options);
+  constructor(model, schema, options = {}, eventBus = new EventEmitter()) {
+    super(model, schema, options);
 
     _.defaults(this._options, defaultOptions);
 
@@ -21,35 +39,12 @@ class MongoService extends MongoQueryService {
     this.logger = logger;
     this.atomic = {
       update: (query, updateObject, updateOptions = {}) => {
-        return collection.update(query, updateObject, updateOptions);
+        return model.updateMany(query, updateObject, updateOptions).exec();
       },
       findOneAndUpdate: (query, update, updateOptions) => {
-        return collection.findOneAndUpdate(query, update, updateOptions);
+        return model.findOneAndUpdate(query, update, updateOptions).exec();
       },
     };
-  }
-
-  _validateSchema(entity) {
-    if (this._options.validateSchema) {
-      const validationResult = this._options.validateSchema(entity);
-
-      const errors = validationResult.errors || validationResult.error;
-      const isJoi = errors ? errors.isJoi : false;
-
-      if (errors && (isJoi || errors.length > 0)) {
-        const errorsObj = {
-          isJoi,
-          details: isJoi ? errors.details : errors,
-        };
-        logger.error('Schema invalid', JSON.stringify(errorsObj.details, 0, 4));
-
-        throw new MongoServiceError(
-          MongoServiceError.INVALID_SCHEMA,
-          `Document schema is invalid: ${JSON.stringify(errorsObj.details)}`,
-          errorsObj,
-        );
-      }
-    }
   }
 
   /**
@@ -90,18 +85,19 @@ class MongoService extends MongoQueryService {
       if (this._options.addCreatedOnField) {
         entity.createdOn = new Date();
       }
-
-      this._validateSchema(entity);
     });
 
-    await this._collection.insert(entities);
+    const schemaEntities = entities.map(e => new this._model(e));
+    schemaEntities.forEach(validateSchema);
+
+    await this._model.create(entities);
     entities.forEach((doc) => {
       this._bus.emit('created', {
         doc,
       });
     });
 
-    return entities.length > 1 ? entities : entities[0];
+    return schemaEntities.length > 1 ? schemaEntities : schemaEntities[0];
   }
 
   /**
@@ -132,9 +128,9 @@ class MongoService extends MongoQueryService {
     }
 
     updateFn(doc);
-    this._validateSchema(doc);
+    validateSchema(doc);
 
-    await this._collection.update({ _id: doc._id }, doc);
+    await this._model.updateOne({ _id: doc._id }, doc).exec();
 
     this._bus.emit('updated', {
       doc,
@@ -151,7 +147,7 @@ class MongoService extends MongoQueryService {
   */
   async remove(query) {
     const docsForRemove = await this.find(query);
-    await this._collection.remove(query);
+    await this._model.deleteMany(query);
 
     docsForRemove.results.forEach((doc) => {
       this._bus.emit('removed', {
@@ -169,10 +165,7 @@ class MongoService extends MongoQueryService {
   * @param options {Object} - index options
   */
   ensureIndex(index, options) {
-    return this._collection.createIndex(index, options)
-      .catch((err) => {
-        this.logger.warn(err);
-      });
+    return this._schema.index(index, options);
   }
 
   async createOrUpdate(query, updateFn) {
@@ -185,13 +178,16 @@ class MongoService extends MongoQueryService {
     return this.create(doc);
   }
 
-  findOneAndUpdate(query, update, options = { returnOriginal: false }) {
+  findOneAndUpdate(query, update, options = {
+    returnOriginal: false,
+    upsert: false,
+  }) {
     let originalDoc;
     return this.findOne(query)
       .then((doc) => {
         originalDoc = doc;
 
-        return this._collection.findOneAndUpdate(query, update, options);
+        return this._model.findOneAndUpdate(query, update, options).exec();
       })
       .then((doc) => {
         if (originalDoc) {
@@ -199,7 +195,7 @@ class MongoService extends MongoQueryService {
             doc,
             prevDoc: originalDoc,
           });
-        } else {
+        } else if (options.upsert) {
           this._bus.emit('created', {
             doc,
           });
