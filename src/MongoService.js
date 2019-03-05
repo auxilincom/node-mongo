@@ -165,7 +165,7 @@ class MongoService extends MongoQueryService {
   * @param options {Object} - index options
   */
   ensureIndex(index, options) {
-    return this._schema.index(index, options);
+    return this._model.collection.createIndex(index, options);
   }
 
   async createOrUpdate(query, updateFn) {

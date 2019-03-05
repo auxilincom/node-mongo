@@ -20,6 +20,7 @@ const connect = (connectionString) => {
   const db = mongoose.createConnection(connectionString, {
     connectTimeoutMS: 20000,
     useNewUrlParser: true,
+    useCreateIndex: true,
   });
 
   db.on('connected', () => {

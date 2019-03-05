@@ -18,13 +18,13 @@
 [![Tweet](https://img.shields.io/twitter/url/https/github.com/auxilincom/node-mongo.svg?style=social)](https://twitter.com/intent/tweet?text=I%27m%20using%20Auxilin%20components%20to%20build%20my%20next%20product%20🚀.%20Check%20it%20out:%20https://github.com/auxilincom/node-mongo)
 [![@auxilin](https://img.shields.io/badge/%F0%9F%92%AC%20Telegram-t.me/auxilin-blue.svg)](https://t.me/auxilin)
 
-Node Mongo — is reactive extension to MongoDB API. It provides few usability improvements to the [monk](https://github.com/Automattic/monk) API. 
+Node Mongo — is reactive extension to MongoDB API. It provides few usability improvements to the [mongoose](https://github.com/Automattic/mongoose) API. 
 
 ## Features
 
 * ️️🚀 **Reactive** fires events as document stored, updated or deleted from database. That helps to keep your database updates for different entities weakly coupled with each other
 * 🔥 **Paging** implements high level paging API
-* ⚡️ **Schema validation** based on [joi](https://github.com/hapijs/joi) 
+* ⚡️ **Schema validation** based on [mongoose schema](https://mongoosejs.com/docs/guide.html) 
 
 ## Installation
 
@@ -42,8 +42,12 @@ const db = require('node-mongo').connect(connectionString);
 
 Short API overview, for more details see [Full API reference](https://github.com/auxilincom/node-mongo/blob/master/API.md)
 ```javascript
+const userSchema = {
+  name: String,
+};
+
 //create a service to work with specific database collection
-const usersService = db.createService('users');
+const usersService = db.createService('users', userSchema);
 
 // find a single document
 const user = await usersService.findById('123');
@@ -65,28 +69,6 @@ const updatedUser = await usersService.update({ _id: '1'}, (doc) => {
 // subscribe to document updates
 userService.on('updated', ({ doc, prevDoc }) => {
 });
-```
-
-Schema declaration (`user.schema.js`):
-```javascript
-const Joi = require('Joi');
-
-const companySchema = {
-  _id: Joi.string(),
-  createdOn: Joi.date(),
-  name: Joi.string(),
-  status: Joi.string().valid('active', 'inactive'),
-};
-
-const joiOptions = {};
-
-module.exports = (obj) => Joi.validate(obj, companySchema, joiOptions);
-```
-
-Schema validation: 
-```javascript
-const schema = require('./user.schema')
-const usersService = db.createService('users', schema);
 ```
 
 ## Full API Reference

@@ -1,10 +1,10 @@
-# 0.1.0 API Reference
+# 1.0.0 API Reference
 
 - [Node Mongo](#nodemongo)
   - [`connect(connectionString)`](#connect-connectionstring)
-  - [`createService(collectionName, [validateSchema, [options]])`](#createservicecollectionname-validateschema-options)
+  - [`createService(collectionName, schema, [options])`](#createservicecollectionname-schema-options)
   - [`setServiceMethod(name, method)`](#setservicemethodname-method)
-  - [`createQueryService(collectionName, [options])`](#createqueryservicecollectionname-options)
+  - [`createQueryService(collectionName, schema, [options])`](#createqueryservicecollectionname-schema-options)
   - [`setQueryServiceMethod(name, method)`](#setqueryservicemethodname-method)
 - [Mongo Query Service](#mongo-query-service)
   - [`name`](#name)
@@ -47,20 +47,13 @@ const connectionString = `mongodb://localhost:27017/home-db`;
 const db = require('node-mongo').connect(connectionString);
 ```
 
-### `createService(collectionName, [validateSchema, [options]])`
+### `createService(collectionName, schema, [options])`
 
 Create and return new [MongoDB service](#mongo-service)
 
 #### Arguments:
 - `collectionName` - *(String)* the name of the collection with which the service will work.
-- `validateSchema` - *(function)* optional function that accepts a collection document as a parameter and returns the result of the validation of this document. We recommend to to use [joi](https://github.com/hapijs/joi) for validation. Or you can use [jsonshema](https://github.com/tdegrunt/jsonschema) for validation.
-
-  On every update service will validate schema before save data to the database. While schema is optional, we highly recommend use it for every service.
-  We believe that `joi` is one of the best libraries for validation of the schema, because it allows us to do the following things:
-  1) Validate the schemas with a variety of variations in data types
-  2) It is easy to redefine the text for validation errors
-  3) Write conditional validations for fields when some conditions are met for other fields
-  4) Do some transformations of the values (for example for string fields you can do `trim`)
+- `schema` - *(Object)* mongoose schema object (created using `mongoose.Schema`) or valid object schema which can be passed to the `mongoose.Schema`. On every update service will validate schema before save data to the database.
 
 - `options` - *(Object)* optional object with options of the service.
   - `addCreatedOnField` - *(Boolean)* if `true` then we add field `createdOn` when we call method [create](#createobjects), default value is `false`
@@ -71,34 +64,35 @@ New [MongoDB service](#mongo-service) object.
 
 #### Example:
 ```javascript
-const Joi = require('Joi');
+const { Schema } = require('mongoose');
 
-const subscriptionSchema = {
-  appId: Joi.string(),
-  plan: Joi.string().valid('free', 'standard'),
-  subscribedOn: Joi.date().allow(null),
-  cancelledOn: Joi.date().allow(null),
-};
+const SubscriptionSchema = new Schema({
+  appId: String,
+  plan: {
+    type: String,
+    enum: ['free', 'standard'],
+  },
+  subscribedOn: Date,
+  cancelledOn: Date,
+});
 
-const companySchema = {
-  _id: Joi.string(),
-  createdOn: Joi.date(),
-  updatedOn: Joi.date(),
-  name: Joi.string(),
-  isOnDemand: Joi.boolean().default(false),,
-  status: Joi.string().valid('active', 'inactive'),
-  subscriptions: Joi.array().items(
-    Joi.object().keys(subscriptionSchema)
-  ),
-};
+const CompanySchema = new Schema({
+  _id: String,
+  createdOn: Date,
+  updatedOn: Date,
+  name: String,
+  isOnDemand: {
+    type: Boolean,
+    default: false,
+  },
+  status: {
+    type: String,
+    enum: ['active', 'inactive'],
+  },
+  subscriptions: [SubscriptionSchema],
+});
 
-const joiOptions = {};
-
-module.exports = (obj) => Joi.validate(obj, companySchema, joiOptions);
-
-// Use schema when creating service. user.service.js file:
-const schema = require('./user.schema')
-const usersService = db.createService('users', schema);
+const companiesService = db.createService('companies', CompanySchema);
 ```
 
 ### `setServiceMethod(name, method)`
@@ -126,18 +120,24 @@ const usersQueryService = db.createQueryService('users');
 const user = await usersQueryService.findById('123')
 ```
 
-### `createQueryService(collectionName, [options])`
+### `createQueryService(collectionName, shema, [options])`
 
 Create and return new [MongoDB Query Service](#mongo-query-service)
 
 #### Arguments:
 - `collectionName` - *(String)* name of the MongoDB collection.
 - `options` - *(Object)* optional object with options of the service (currently, specified options are not used in the service)
+- `schema` - *(Object)* mongoose schema object (created using `mongoose.Schema`) or valid object schema which can be passed to the `mongoose.Schema`. On every update service will validate schema before save data to the database.
 
 #### Example:
 
 ```javascript
-const usersService = db.createQueryService('users');
+const userSchema = {
+  _id: String,
+  name: String,
+};
+
+const usersService = db.createQueryService('users', userSchema);
 ```
 
 ### `setQueryServiceMethod(name, method)`

@@ -291,4 +291,11 @@ describe('MongoService', () => {
     });
     updatedBeast.updatedOn.should.be.an.instanceof(Date);
   });
+
+  it('should create an index by name', async () => {
+    await userService.ensureIndex({ name: 1 });
+
+    const indexesList = await userService._model.listIndexes();
+    indexesList[1].key.should.have.property('name', 1);
+  });
 });
