@@ -41,7 +41,6 @@ const validateJsonSchema = obj => validator.validate(obj, jsonSchema);
 let userServiceJoiSchema;
 let userServiceJsonSchema;
 let userService;
-let findUserService;
 let userServiceWithDate;
 
 describe('MongoService', () => {
@@ -57,7 +56,6 @@ describe('MongoService', () => {
     );
 
     userService = db.createService(`users-${Date.now()}`);
-    findUserService = db.createService(`users-${Date.now() + 1}`);
 
     userServiceWithDate = db.createService(
       `users-${Date.now() + 2}`,
@@ -73,7 +71,6 @@ describe('MongoService', () => {
     await Promise.all([
       userServiceJoiSchema._collection.drop(),
       userService._collection.drop(),
-      findUserService._collection.drop(),
       userServiceWithDate._collection.drop(),
     ]);
   });
@@ -322,5 +319,12 @@ describe('MongoService', () => {
       _id: beast._id,
     });
     updatedBeast.updatedOn.should.be.an.instanceof(Date);
+  });
+
+  it('should create an index by name', async () => {
+    await userService.ensureIndex({ name: 1 });
+
+    const indexesList = await userService._collection.indexes();
+    indexesList[1].key.should.have.property('name', 1);
   });
 });

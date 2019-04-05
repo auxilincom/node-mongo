@@ -199,7 +199,7 @@ class MongoService extends MongoQueryService {
             doc,
             prevDoc: originalDoc,
           });
-        } else {
+        } else if (options.upsert) {
           this._bus.emit('created', {
             doc,
           });

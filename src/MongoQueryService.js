@@ -111,10 +111,11 @@ class MongoQueryService {
   * More documentation: https://docs.mongodb.com/manual/meta/aggregation-quick-reference
   *
   * @param pipeline {Array} - aggregation pipeline
+  * @param options {Object}
   * @return {Object} - aggregation result
   */
-  aggregate(pipeline) {
-    return this._collection.aggregate(pipeline);
+  aggregate(pipeline, options) {
+    return this._collection.aggregate(pipeline, options);
   }
 
   /**

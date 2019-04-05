@@ -1,5 +1,7 @@
-const monk = require('monk');
+const { ObjectID } = require('mongodb');
 
 exports.generate = () => {
-  return monk.id().toHexString();
+  const objectId = new ObjectID();
+  objectId.generate();
+  return objectId.toHexString();
 };
