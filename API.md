@@ -1,4 +1,4 @@
-# 0.1.0 API Reference
+# 1.0.0 API Reference
 
 - [Node Mongo](#nodemongo)
   - [`connect(connectionString)`](#connect-connectionstring)
@@ -240,7 +240,7 @@ const usersNumber = await usersService.count({ name: 'Bob' });
 
 ### `distinct(field, [query, [options]])`
 
-This method is a simple wrapper of the `distinct` method of the `monk`. You can find documention [here](https://automattic.github.io/monk/docs/collection/distinct.html).
+This method is a wrapper of the `distinct` method of the `mongoDB driver API` but without `callback` parameter. You can find documention [here](http://mongodb.github.io/node-mongodb-native/3.2/api/Collection.html#distinct).
 
 ### `exists(query)`
 
@@ -258,9 +258,9 @@ const usersService = db.createService('users');
 const usersExist = await usersService.exists({ name: 'Bob' });
 ```
 
-### `aggregate(pipeline)`
+### `aggregate(pipeline, [options])`
 
-This method is a simple wrapper of the `aggregate` method of the `monk`. You can find documention [here](https://automattic.github.io/monk/docs/collection/aggregate.html).
+This method is a wrapper of the `aggregate` method of the `mongoDB driver API` but without `callback` parameter. You can find documention [here](http://mongodb.github.io/node-mongodb-native/3.2/api/Collection.html#aggregate).
 
 ### `generateId()`
 
@@ -380,7 +380,7 @@ const updatedUser = await usersService.update({ _id: '1'}, (doc) => {
 
 ### `atomic.update(query, updateObject, [updateOptions])`
 
-This method is a simple wrapper of the `update` method of the `monk`. You can find documention [here](https://automattic.github.io/monk/docs/collection/update.html). This method doesn't publish `updated` event.
+This method is a wrapper of the `updateMany` method of the `mongoDB driver API` but without `callback` parameter. You can find documention [here](http://mongodb.github.io/node-mongodb-native/3.2/api/Collection.html#updateMany). This method doesn't publish `updated` event.
 
 ### `remove(query)`
 
@@ -400,7 +400,7 @@ const removeUsers = await usersService.update({ name: 'Alex' });
 
 ### `ensureIndex(index, options)`
 
-Create or check index existence. This method is a wrapper of the `createIndex` method of the `monk`. You can find documention [here](https://automattic.github.io/monk/docs/collection/createIndex.html). This method omits error.
+Create or check index existence. This method is a wrapper of the `createIndex` method of the `mongoDB driver API` but without `callback` parameter. You can find documention [here](http://mongodb.github.io/node-mongodb-native/3.2/api/Collection.html#createIndex). This method omits error.
 
 ### `createOrUpdate(query, updateFn)`
 
@@ -445,7 +445,7 @@ const newUser = await usersService.findOneAndUpdate({ name: 'Bob'}, {
 
 ### `atomic.findOneAndUpdate(query, update, [updateOptions])`
 
-This method is a simple wrapper of the `findOneAndUpdate` method of the `monk`. You can find documention [here](https://automattic.github.io/monk/docs/collection/findOneAndUpdate.html). This method doesn't publish any event.
+This method is a wrapper of the `findOneAndUpdate` method of the `mongoDB driver API` but without `callback` parameter. You can find documention [here](http://mongodb.github.io/node-mongodb-native/3.2/api/Collection.html#findOneAndUpdate). This method doesn't publish any event.
 
 ### `onPropertiesUpdated(properties, callback)`
 

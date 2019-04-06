@@ -23,7 +23,10 @@ describe('MongoQueryService', () => {
   const userQueryService2 = db.createQueryService(collectionName2);
 
   after(async () => {
-    await userService._collection.drop();
+    await Promise.all([
+      userService._collection.drop(),
+      userService2._collection.drop(),
+    ]);
   });
 
   it('should successfully get name of the collection', () => {
@@ -74,12 +77,12 @@ describe('MongoQueryService', () => {
     res.should.be.equal(2);
   });
 
-  it('should return distinct valuest', async () => {
+  it('should return distinct values', async () => {
     await userService2.create([{ name: 'User1' }, { name: 'User2' }]);
 
     const res = await userQueryService2.distinct('name');
-    res[0].should.be.equal('User1');
-    res[1].should.be.equal('User2');
+    res.length.should.be.equal(2);
+    res.should.be.an('array').that.includes('User1', 'User2');
   });
 
   it("should return that user Professor X doesn't exist in the list of user", async () => {
@@ -158,6 +161,7 @@ describe('MongoQueryService', () => {
   it('should wait deletion of the document', async () => {
     const domino = { name: 'Neena Thurman' };
     userService.create(domino);
+
     setTimeout(() => {
       userService.remove(domino);
     }, 200);

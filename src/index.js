@@ -1,4 +1,4 @@
-const monk = require('monk');
+const database = require('./database');
 
 const MongoService = require('./MongoService');
 const MongoQueryService = require('./MongoQueryService');
@@ -15,33 +15,28 @@ const logger = global.logger || console;
 */
 const connect = (connectionString) => {
   // options docs: http://mongodb.github.io/node-mongodb-native/2.1/reference/connecting/connection-settings/
-  const db = monk(connectionString, {
+  const db = database.connect(connectionString, {
     connectTimeoutMS: 20000,
   });
 
-  db.on('error-opening', (err) => {
+  db.on('connected', () => {
+    logger.info(`Connected to the mongodb: ${connectionString}`);
+  });
+
+  db.on('error', (err) => {
     logger.error(err, 'Failed to connect to the mongodb on start');
     throw err;
   });
 
-  db.on('open', () => {
-    logger.info(`Connected to mongodb: ${connectionString}`);
+  // When the mongodb server goes down, mongoose emits a 'disconnected' event
+  db.on('disconnected', () => {
+    logger.warn(`Lost connection with mongodb: ${connectionString}`);
   });
 
-  db.on('close', (err) => {
-    if (err) {
-      logger.error(err, `Lost connection with mongodb: ${connectionString}`);
-    } else {
-      logger.warn(`Closed connection with mongodb: ${connectionString}`);
-    }
-  });
-
-  db.on('connected', (err) => {
-    if (err) {
-      logger.error(err);
-    } else {
-      logger.info(`Connected to mongodb: ${connectionString}`);
-    }
+  // The driver tries to automatically reconnect by default, so when the
+  // server starts the driver will reconnect and emit a 'reconnect' event.
+  db.on('reconnected', () => {
+    logger.warn(`Reconnected with mongodb: ${connectionString}`);
   });
 
   // Add factory methods to the database object
