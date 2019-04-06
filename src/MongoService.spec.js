@@ -327,4 +327,10 @@ describe('MongoService', () => {
     const indexesList = await userService._collection.indexes();
     indexesList[1].key.should.have.property('name', 1);
   });
+
+  it("should don't throw an error when dropping inexistent collection", async () => {
+    const service = db.createService('empty-collection');
+    const result = await service._collection.drop();
+    result.should.be.equal('ns not found');
+  });
 });

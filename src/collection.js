@@ -104,7 +104,14 @@ class Collection {
 
   drop() {
     return this.waitInitCollection(() => {
-      return this._collection.drop();
+      return this._collection.drop()
+        .catch((err) => {
+          if (err && err.message === 'ns not found') {
+            return 'ns not found';
+          }
+
+          throw err;
+        });
     });
   }
 

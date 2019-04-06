@@ -1,3 +1,7 @@
+## v1.0.1 (2019-04-06)
+
+* Don't throw an error when dropping inexistent collection
+
 ## v1.0.0 (2019-04-06)
 
 * Remove monk and use native mongoDB driver api (no breaking changes).
