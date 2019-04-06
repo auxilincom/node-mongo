@@ -1,3 +1,8 @@
+## v1.0.0 (2019-04-06)
+
+* Remove monk and use native mongoDB driver api (no breaking changes).
+* Trigger `created` event when use `findOneAndUpdate` only if use option `upsert`
+
 ## v0.3.0 (2018-11-28)
 
 * Expose `MongoService` and `MongoQueryService`, so they can be used as extention point.
