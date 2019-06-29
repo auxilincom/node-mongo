@@ -1,5 +1,6 @@
+---
 kind: pipeline
-name: default
+name: tests
 
 steps:
 - name: run-mongo-tests
@@ -28,6 +29,22 @@ steps:
     status:
     - success
 
+services:
+- name: mongo
+  image: mongo:4.0.10
+
+trigger:
+  branch:
+  - master
+  event:
+  - push
+  - pull_request
+
+---
+kind: pipeline
+name: npm
+
+steps:
 - name: publish-node-mongo
   image: plugins/npm
   settings:
@@ -37,18 +54,7 @@ steps:
       from_secret: npm_password
     email:
       from_secret: npm_email
-  when:
-    event:
-    - tag
-    branches:
-    - master
-    status:
-    - success
-
-services:
-- name: mongo
-  image: mongo:4.0.10
 
 trigger:
-  branch:
-  - master
+  event:
+  - tag
