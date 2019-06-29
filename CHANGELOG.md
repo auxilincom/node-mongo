@@ -1,3 +1,8 @@
+## v1.1.0 (2019-06-29)
+
+* Update npm packages
+* Update drone config
+
 ## v1.0.1 (2019-04-06)
 
 * Don't throw an error when dropping inexistent collection
