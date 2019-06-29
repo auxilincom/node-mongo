@@ -1,7 +1,7 @@
 kind: pipeline
 name: default
 
-steeps:
+steps:
 - name: run-mongo-tests
   image: node:10.16.0
   commands:
@@ -14,7 +14,6 @@ steeps:
 
 - name: run-coveralls
   image: node:10.16.0
-    secrets: [ coveralls_repo_token ]
   commands:
     - sleep 5
     - chmod +x ./bin/run-coveralls.sh
