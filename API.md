@@ -71,7 +71,7 @@ New [MongoDB service](#mongo-service) object.
 
 #### Example:
 ```javascript
-const Joi = require('Joi');
+const Joi = require('@hapi/joi');
 
 const subscriptionSchema = {
   appId: Joi.string(),

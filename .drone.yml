@@ -1,32 +1,55 @@
-pipeline:
-  run-mongo-tests:
-    image: node:10.13.0
-    commands:
-      - chmod +x ./bin/run.sh
-      - ./bin/run.sh
-    when:
-      status: [ failure, success ]
-      event: [pull_request]
+kind: pipeline
+name: default
 
-  run-coveralls:
-    image: node:10.13.0
+steeps:
+- name: run-mongo-tests
+  image: node:10.16.0
+  commands:
+    - chmod +x ./bin/run.sh
+    - ./bin/run.sh
+  when:
+    event:
+    - pull_request
+    - push
+
+- name: run-coveralls
+  image: node:10.16.0
     secrets: [ coveralls_repo_token ]
-    commands:
-      - sleep 5
-      - chmod +x ./bin/run-coveralls.sh
-      - ./bin/run-coveralls.sh
-    when:
-      event: [ push ]
-      branches: [ master ]
+  commands:
+    - sleep 5
+    - chmod +x ./bin/run-coveralls.sh
+    - ./bin/run-coveralls.sh
+  environment:
+    COVERALLS_REPO_TOKEN:
+      from_secret: coveralls_repo_token
+  when:
+    event:
+    - pull_request
+    - push
+    status:
+    - success
 
-  publish-node-mongo:
-    image: plugins/npm
-    secrets: [ npm_username, npm_email, npm_password ]
-    when:
-      event: [ tag ]
-      branches: [ master ]
+- name: publish-node-mongo
+  image: plugins/npm
+  settings:
+    username:
+      from_secret: npm_username
+    password:
+      from_secret: npm_password
+    email:
+      from_secret: npm_email
+  when:
+    event:
+    - tag
+    branches:
+    - master
+    status:
+    - success
 
 services:
-  mongo:
-    image: mongo:4.0.3
-branches: [ master, "*:master" ]
+- name: mongo
+  image: mongo:4.0.10
+
+trigger:
+  branch:
+  - master

@@ -1,0 +1,7 @@
+{
+  "nyc": {
+    "all": true,
+    "check-coverage": true,
+    "reporter": ["text-lcov"]
+  }
+}
