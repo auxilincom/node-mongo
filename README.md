@@ -69,7 +69,7 @@ userService.on('updated', ({ doc, prevDoc }) => {
 
 Schema declaration (`user.schema.js`):
 ```javascript
-const Joi = require('Joi');
+const Joi = require('@hapi/joi');
 
 const companySchema = {
   _id: Joi.string(),

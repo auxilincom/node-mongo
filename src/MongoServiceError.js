@@ -1,7 +1,10 @@
 class MongoServiceError extends Error {
   constructor(code, message, error) {
     super(message);
-    this.name = 'MongoServiceError';
+
+    Error.captureStackTrace(this, this.constructor);
+
+    this.name = this.constructor.name;
     this.code = code;
     this.error = error;
   }
