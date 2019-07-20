@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const path = require('path');
 const fs = require('fs');
 
@@ -12,12 +11,12 @@ let base = {
 
 const envConfig = require(`./${env}.js`); // eslint-disable-line
 
-base = _.merge(base, envConfig || {});
+base = Object.assign({}, base, envConfig || {});
 
 const loadLocalConfig = (name) => {
   const localConfigPath = path.join(__dirname, name);
   if (fs.existsSync(localConfigPath)) {
-    base = _.merge(base, require(localConfigPath)); // eslint-disable-line
+    base = Object.assign({}, base, require(localConfigPath)); // eslint-disable-line
     console.log(`loaded ${localConfigPath} config`); // eslint-disable-line
   }
 };
