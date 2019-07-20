@@ -1,3 +1,7 @@
+## v1.1.1 (2019-07-20)
+
+* Fix vulnerability issue
+
 ## v1.1.0 (2019-06-29)
 
 * Update npm packages
