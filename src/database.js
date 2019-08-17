@@ -24,7 +24,10 @@ class Database extends EventEmitter {
     super();
 
     this._url = url;
-    this._options = Object.assign({}, defaultOptions, options);
+    this._options = {
+      ...defaultOptions,
+      ...options,
+    };
 
     this._db = null;
     this._dbPromise = null;

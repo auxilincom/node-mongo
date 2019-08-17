@@ -11,7 +11,10 @@ let base = {
 
 const envConfig = require(`./${env}.js`); // eslint-disable-line
 
-base = Object.assign({}, base, envConfig || {});
+base = {
+  ...base,
+  ...envConfig,
+};
 
 const loadLocalConfig = (name) => {
   const localConfigPath = path.join(__dirname, name);

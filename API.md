@@ -1,4 +1,4 @@
-# 1.1.0 API Reference
+# 1.2.0 API Reference
 
 - [Node Mongo](#nodemongo)
   - [`connect(connectionString)`](#connect-connectionstring)
