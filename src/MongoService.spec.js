@@ -34,9 +34,9 @@ const jsonSchema = {
   required: ['lastName'],
 };
 
-const validateJoiSchema = obj => Joi.validate(obj, joiSchema, { allowUnknown: true });
+const validateJoiSchema = (obj) => Joi.validate(obj, joiSchema, { allowUnknown: true });
 
-const validateJsonSchema = obj => validator.validate(obj, jsonSchema);
+const validateJsonSchema = (obj) => validator.validate(obj, jsonSchema);
 
 let userServiceJoiSchema;
 let userServiceJsonSchema;

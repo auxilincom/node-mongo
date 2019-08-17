@@ -1,3 +1,8 @@
+## v1.2.0 (2019-08-17)
+
+* Update npm packages
+* Use `eslint` 6
+
 ## v1.1.1 (2019-07-20)
 
 * Fix vulnerability issue
