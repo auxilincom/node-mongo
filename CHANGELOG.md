@@ -1,3 +1,8 @@
+## v1.3.0 (2019-09-04)
+
+* Update npm packages
+* Fix deprecation warning
+
 ## v1.2.0 (2019-08-17)
 
 * Update npm packages

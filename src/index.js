@@ -17,6 +17,7 @@ const connect = (connectionString) => {
   // options docs: http://mongodb.github.io/node-mongodb-native/2.1/reference/connecting/connection-settings/
   const db = database.connect(connectionString, {
     connectTimeoutMS: 20000,
+    useUnifiedTopology: true,
   });
 
   db.on('connected', () => {
