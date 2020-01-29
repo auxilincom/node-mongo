@@ -109,8 +109,9 @@ class MongoService extends MongoQueryService {
   * Publishes `updated` event {doc, prevDoc}
   * Sets updatedOn to the current date
   *
+  * @deprecated Use updateOne instead. This method DO NOT unset delete fields ($set: {} is used)
   * @param query {Object} - mongo search query
-  * @param updateFn {function(doc)} - function, that recieves document to be updated
+  * @param updateFn {function(doc)} - function, that receives document to be updated
   * @return {Object} Updated object
   */
   async update(query, updateFn) {
@@ -131,10 +132,41 @@ class MongoService extends MongoQueryService {
       doc.updatedOn = new Date();
     }
 
-    updateFn(doc);
+    const update = updateFn(doc);
     this._validateSchema(doc);
 
     await this._collection.update({ _id: doc._id }, doc);
+
+    this._bus.emit('updated', {
+      doc,
+      prevDoc,
+    });
+
+    return doc;
+  }
+
+  async updateOne(query, updateFn) {
+    if (!_.isFunction(updateFn)) {
+      throw new Error('updateFn must be a function');
+    }
+
+    const doc = await this.findOne(query);
+    if (!doc) {
+      throw new MongoServiceError(
+        MongoServiceError.NOT_FOUND,
+        `Document not found while updating. Query: ${JSON.stringify(query)}`,
+      );
+    }
+    const prevDoc = _.cloneDeep(doc);
+
+    if (this._options.addUpdatedOnField) {
+      doc.updatedOn = new Date();
+    }
+
+    updateFn(doc);
+    this._validateSchema(doc);
+
+    await this._collection.updateOne({ _id: doc._id }, doc);
 
     this._bus.emit('updated', {
       doc,
@@ -171,7 +203,7 @@ class MongoService extends MongoQueryService {
   ensureIndex(index, options) {
     return this._collection.createIndex(index, options)
       .catch((err) => {
-        this.logger.warn(err);
+        this.logger.warning(err);
       });
   }
 

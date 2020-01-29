@@ -121,6 +121,9 @@ class Collection {
     });
   }
 
+  /**
+   * @deprecated Use updateOne, updateMany instead
+   */
   update(selector, update, options) {
     const updateQuery = Object.prototype.hasOwnProperty.call(update, '$set')
       ? update
@@ -128,6 +131,18 @@ class Collection {
 
     return this.waitInitCollection(() => {
       return this._collection.updateMany(selector, updateQuery, options);
+    });
+  }
+
+  updateMany(filter, update, options) {
+    return this.waitInitCollection(() => {
+      return this._collection.updateMany(filter, update, options);
+    });
+  }
+
+  updateOne(filter, update, options) {
+    return this.waitInitCollection(() => {
+      return this._collection.updateOne(filter, update, options);
     });
   }
 

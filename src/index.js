@@ -31,13 +31,13 @@ const connect = (connectionString) => {
 
   // When the mongodb server goes down, mongoose emits a 'disconnected' event
   db.on('disconnected', () => {
-    logger.warn('Lost connection with MongoDB.');
+    logger.warning('Lost connection with MongoDB.');
   });
 
   // The driver tries to automatically reconnect by default, so when the
   // server starts the driver will reconnect and emit a 'reconnect' event.
   db.on('reconnected', () => {
-    logger.warn('Reconnected to MongoDB.');
+    logger.warning('Reconnected to MongoDB.');
   });
 
   // Add factory methods to the database object
