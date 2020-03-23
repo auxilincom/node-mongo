@@ -75,7 +75,7 @@ class MongoService extends MongoQueryService {
   * @param {array | object} Object or array of objects to create
   * @return {array | object} Object or array of created objects
   */
-  async create(objs) {
+  async create(objs, opts = {}) {
     let entities = objs;
     if (!_.isArray(entities)) {
       entities = [entities];
@@ -94,7 +94,7 @@ class MongoService extends MongoQueryService {
       this._validateSchema(entity);
     });
 
-    await this._collection.insert(entities);
+    await this._collection.insert(entities, opts);
     entities.forEach((doc) => {
       this._bus.emit('created', {
         doc,
