@@ -207,6 +207,13 @@ class MongoService extends MongoQueryService {
       });
   }
 
+  dropIndex(index) {
+    return this._collection.dropIndex(index)
+      .catch((err) => {
+        this.logger.warning(err);
+      });
+  }
+
   async createOrUpdate(query, updateFn) {
     const exists = await this.exists(query);
     if (exists) {

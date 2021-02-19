@@ -158,6 +158,12 @@ class Collection {
     });
   }
 
+  dropIndex(index) {
+    return this.waitInitCollection(() => {
+      return this._collection.dropIndex(index);
+    });
+  }
+
   indexes(options) {
     return this.waitInitCollection(() => {
       return this._collection.indexes(options);
